@@ -6,6 +6,9 @@ import datetime
 
 uiFile = "machine.ui"
 
+
+#TODO : reset les valeur de maison et d'arbre quand on reset la game, ajouter un boutton pour ajouter au marché et vendre le panier
+
 class UI(QDialog):
     def __init__(self):
         super(UI, self).__init__()
@@ -67,7 +70,7 @@ class UI(QDialog):
 
         #temps
         self.time_left_label = self.findChild(QLabel, "time_left_label")
-        self.time_left = 6
+        self.time_left = 600
         self.timer = QTimer()
         self.timer.timeout.connect(self.time_update)
         self.timer.start(1000) #start and update avery second
@@ -96,7 +99,7 @@ class UI(QDialog):
 
     def time_update_prix(self):
         for ressource in self.ressources_list:
-            ressource.update_prix(1.001)
+            ressource.update_prix(0.001, prix_init=True)
     
     def time_update_perte_premiere_vente(self):
         for ressource in self.ressources_list:
@@ -127,7 +130,8 @@ class UI(QDialog):
         self.start_stop_button.setDisabled(True)
         self.reset_button.setEnabled(True)
         for ressource in self.ressources_list:
-            ressource.button.setDisabled(True)
+            #ressource.button.setDisabled(True)
+            a=1
         self.calculate_score_final()
 
         
@@ -142,7 +146,8 @@ class UI(QDialog):
         self.score_actuel_label.setText(f"{round(self.score_actuel, 2)}")
         self.perte_premiere_vente = 0
         self.perte_premiere_vente_label.setText(f"{round(self.perte_premiere_vente, 2)}")
-
+        self.score_final = 0
+        self.score_final_label.setText(f"{round(self.score_final, 2)}")
         for ressource in self.ressources_list:
             ressource.reset()
 
@@ -180,6 +185,7 @@ class UI(QDialog):
         self.n_arbre_parc -= 1
         self.update_penalite(-0.01)
 
+
     class Ressource():
         def __init__(self, MainWindow:QDialog, button:QPushButton, n_vendu_label:QLabel, prix_label:QLabel,  prix_init:float):
 
@@ -204,8 +210,6 @@ class UI(QDialog):
             self.prix_label.setText(str(round(self.prix,3)))
             self.premiere_vente_done = False
 
-
-
         def vendu(self):
             self.n_vendu += 1
             self.label.setText(f"{self.n_vendu}")
@@ -216,9 +220,12 @@ class UI(QDialog):
                 self.premiere_vente_done = True
                 #self.temps_premiere_vente = self.MainWindow.time_left
 
-        def update_prix(self, k, reset=False):
-            # k is the multiplying factor that we want. When updating every second, 1.001 and when selling 0.6
-            self.prix = min(self.prix*k, self.prix_init)
+        def update_prix(self, k, prix_init=False):
+            # k is the multiplying factor that we want. When updating every second, 0.001 and when selling 0.6
+            if prix_init:
+                self.prix = min(self.prix+(self.prix_init*k), self.prix_init)
+            else:
+                self.prix = min(self.prix*k, self.prix_init)
             self.prix_label.setText(str(round(self.prix,3)))
             
             
